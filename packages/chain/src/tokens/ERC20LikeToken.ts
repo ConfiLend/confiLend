@@ -8,16 +8,9 @@ import {
 import { State, StateMap, assert } from "@proto-kit/protocol";
 import {
     Field,
-    SmartContract,
-    method,
-    DeployArgs,
-    Permissions,
     PublicKey,
     UInt64,
     Provable,
-    isReady,
-    Struct,
-    UInt32 
 } from 'o1js';
 export const errors = {
     senderNotFrom: () => "Sender does not match 'from'",
