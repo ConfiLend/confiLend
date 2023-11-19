@@ -4,6 +4,7 @@ import {
     state,
     runtimeMethod,
   } from "@proto-kit/module";
+  import {minaAddresses,defaultaddr} from './addresses';
 
 import { State, StateMap, assert } from "@proto-kit/protocol";
 import {
@@ -11,6 +12,7 @@ import {
     PublicKey,
     UInt64,
     Provable,
+    Bool,
 } from 'o1js';
 export const errors = {
     senderNotFrom: () => "Sender does not match 'from'",
@@ -19,15 +21,20 @@ export const errors = {
     burnBalanceInsufficient: () => "Burn balance is insufficient",
   };
 
-export class erc20Token extends  RuntimeModule<unknown> {
+export class ERC20LikeToken extends  RuntimeModule<unknown> {
     @state() public balances = StateMap.from<PublicKey, UInt64>(
         PublicKey,
         UInt64
       );
-     public tokenSymbol = State.from<Field>(Field);
-
-      public constructor(symbol: Field) {
+        public tokenSymbol = State.from<Field>(Field);
+        public tokenAddr = State.from<PublicKey>(PublicKey);
+        public constructor(symbol: Field) {
         super();
+        var minaAddr = minaAddresses.get(symbol.toString());
+        if(minaAddr === undefined){
+            minaAddr = defaultaddr
+        }
+        this.tokenAddr.set(PublicKey.from({x:Field.from(minaAddr),isOdd:Bool(true)}))
         this.tokenSymbol.set(symbol);
       }
     
@@ -59,6 +66,7 @@ public setBalance( address: PublicKey, amount: UInt64) {
     const newBalance = balance.sub(amount);
     this.setBalance( address, newBalance);
   }
+  @runtimeMethod()
   public transfer(
     from: PublicKey,
     to: PublicKey,
@@ -86,6 +94,37 @@ public setBalance( address: PublicKey, amount: UInt64) {
     this.setBalance(from, newFromBalance);
     this.setBalance(to, newToBalance);
   }
+  @runtimeMethod()
+  public getAddress(): PublicKey {
+    return this.tokenAddr.get().value;
+  }
+//   @runtimeMethod()
+//   public transferToAdmin(
+//     from: PublicKey,
+//     amount: UInt64
+//   ) {
+//     const fromBalance = this.balanceOf( from);
+//     const toBalance = this.balanceOf( this.);
+
+//     const fromBalanceIsSufficient = fromBalance.greaterThanOrEqual(amount);
+
+//     assert(fromBalanceIsSufficient, errors.fromBalanceInsufficient());
+
+//     // used to prevent field underflow during subtraction
+//     const paddedFrombalance = fromBalance.add(amount);
+//     const safeFromBalance = Provable.if(
+//       fromBalanceIsSufficient,
+//       UInt64,
+//       fromBalance,
+//       paddedFrombalance
+//     );
+
+//     const newFromBalance = safeFromBalance.sub(amount);
+//     const newToBalance = toBalance.add(amount);
+
+//     this.setBalance(from, newFromBalance);
+//     this.setBalance(to, newToBalance);
+//   }
   @runtimeMethod()
   public transferSigned(
     from: PublicKey,
