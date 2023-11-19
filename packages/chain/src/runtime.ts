@@ -1,9 +1,9 @@
 import { UInt64 } from "o1js";
-import { Balances } from "./balances";
+import {  LendingMarket} from "./LendingMarkets/LendingMarket";
 
 export default {
   modules: {
-    Balances,
+    LendingMarket,
   },
   config: {
     Balances: {

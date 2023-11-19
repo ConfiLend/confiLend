@@ -41,5 +41,13 @@ import { stat } from 'fs';
       super.mint(from, amount);
       
     }
-  
+    @runtimeMethod()
+    public _withdraw(from: PublicKey, amount: UInt64): void {
+      assert(this.transaction.sender.equals(this.admin.get().value), errors.senderNotAuthorized());
+      const stored = this.supplyBalance.get(from).value;
+      const newBalance = stored.sub(amount);
+      // ask for atomicity
+      this.supplyBalance.set(from, newBalance);
+      super.burn(from, amount);
+    }
   }

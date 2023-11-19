@@ -76,10 +76,30 @@ export class LendingMarket extends RuntimeModule<unknown> {
   }
 
   @runtimeMethod()
-  public withdraw(asset: PublicKey, user: PublicKey, amount: UInt64): void {}
+  public withdraw(asset: PublicKey, user: PublicKey, amount: UInt64): void {
+    this.assertZKMTokenExist(asset);
+    const zkmToken = this.zkmTokenMap.get(asset)
+    if(zkmToken === undefined)
+      return;
+    zkmToken._withdraw(user, amount);
+    const mTokenAddress = zkmToken.getAddress();
+    const token = this.tokenMap.get(asset);
+    if(token === undefined)
+      return;
+    token.transfer(mTokenAddress,user, amount);
+  }
   
   @runtimeMethod()
-  public borrow(asset: PublicKey, user: PublicKey, amount: UInt64): void {}
+  public borrow(asset: PublicKey, user: PublicKey, amount: UInt64): void {
+    // this.assertZKMTokenExist(asset);
+    // const zkmToken = this.zkmTokenMap.get(asset)
+    // if(zkmToken === undefined)
+    //   return;
+    // const zkmDebtToken = this.zkmDebtTokenMap.get(asset)
+    // if(zkmDebtToken === undefined)
+    //   return;
+    // zkmDebtToken._borrow(user, amount);
+  }
   
   @runtimeMethod()
   public repay(asset: PublicKey, user: PublicKey, amount: UInt64): void {}
