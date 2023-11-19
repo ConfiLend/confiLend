@@ -35,6 +35,7 @@ export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
     @inject("ERC20LikeToken") public tokenMap: Map<PublicKey, ERC20LikeToken>
   ) {
     super();
+    
   }
   public async init(): Promise<void> {
     await this.config.minaTokenAddresses.forEach((value, key) => {
@@ -42,23 +43,20 @@ export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
       const mtokenAddr = this.config.minaMTokenAddresses.get(key);
       if (mtokenAddr == undefined) {
         mtoken.setTokenAddress(
-          PublicKey.from({ x: Field.from(""), isOdd: Bool(true) })
+          PublicKey.fromBase58("")
         );
       } else {
         mtoken.setTokenAddress(
-          PublicKey.from({ x: Field.from(mtokenAddr), isOdd: Bool(true) })
+          PublicKey.fromBase58(mtokenAddr)
         );
       }
       mtoken.setAdmin(
-        PublicKey.from({
-          x: Field.from(this.config.LendingMarketAddr),
-          isOdd: Bool(true),
-        })
+        PublicKey.fromBase58(this.config.LendingMarketAddr)
       );
       mtoken.setSymbol(Field.from("zk" + key + "MToken"));
 
       this.zkmTokenMap.set(
-        PublicKey.from({ x: Field.from(key), isOdd: Bool(true) }),
+        PublicKey.fromBase58(key),
         mtoken
       );
 
@@ -66,19 +64,15 @@ export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
       const mDebttokenAddr = this.config.minaMDebtTokenAddresses.get(key);
       if (mDebttokenAddr == undefined) {
         mtoken.setTokenAddress(
-          PublicKey.from({ x: Field.from(""), isOdd: Bool(true) })
+          PublicKey.fromBase58("")
         );
       } else {
         mtoken.setTokenAddress(
-          PublicKey.from({ x: Field.from(mDebttokenAddr), isOdd: Bool(true) })
+          PublicKey.fromBase58(mDebttokenAddr)
         );
       }
       mDebttoken.setAdmin(
-        PublicKey.from({
-          x: Field.from(this.config.LendingMarketAddr),
-          isOdd: Bool(true),
-        })
-      );
+        PublicKey.fromBase58(this.config.LendingMarketAddr)      );
       mDebttoken.setSymbol(Field.from("zk" + key + "DebtToken"));
 
       this.zkmDebtTokenMap.set(
@@ -90,18 +84,18 @@ export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
       const erc20TokenAddr = value;
       if (erc20TokenAddr == undefined) {
         mtoken.setTokenAddress(
-          PublicKey.from({ x: Field.from(""), isOdd: Bool(true) })
+          PublicKey.fromBase58("")
         );
       } else {
         mtoken.setTokenAddress(
-          PublicKey.from({ x: Field.from(erc20TokenAddr), isOdd: Bool(true) })
+          PublicKey.fromBase58(erc20TokenAddr)
         );
       }
       erc20token.setSymbol(Field.from(key));
 
       this.tokenMap.set(
-        PublicKey.from({ x: Field.from(key), isOdd: Bool(true) }),
-        new ERC20LikeToken()
+        PublicKey.fromBase58(key),
+        erc20token
       );
     });
     }
@@ -126,6 +120,12 @@ export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
 
     if (pool === undefined) return Bool(false);
     else return Bool(true);
+  }
+  @runtimeMethod()
+  public getTokens(asset : PublicKey){
+    const tt = this.tokenMap.get(asset)
+    if(tt === undefined) return "AA";
+    return tt.getSymbol();
   }
   @runtimeMethod()
   public supply(asset: PublicKey, user: PublicKey, amount: UInt64): void {
