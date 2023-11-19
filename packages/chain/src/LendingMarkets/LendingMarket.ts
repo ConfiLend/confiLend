@@ -8,22 +8,28 @@ import {
   import { Bool, PublicKey, UInt64 } from "o1js";
 import { ERC20LikeToken } from "../tokens/ERC20LikeToken";
 import { inject } from "tsyringe";
-import { ZKMToken } from "../tokens/zkMToken";
-import { ZKMDebtToken } from "../tokens/zkMDebtToken";
+import { zkMToken } from "../tokens/zkMToken";
+import { zkMDebtToken } from "../tokens/zkMDebtToken";
 export const errors = {
   tokenDoesNotExist: () => "Token does not exists",
   tokensMatch: () => "Cannot create pool with matching tokens",
   tokenOutAmountTooLow: () => "Token amount too low",
   tokenInAmountTooHigh: () => "Token amount too high",
 };
+interface LendingMarketConfig {
+  minaTokenAddresses : Map<string, string> ;
+  minaMTokenAddresses : Map<string, string> ;
+  minaMDebtTokenAddresses : Map<string, string> ;
+  LendingMarketAddr : string ;
+}
 @runtimeModule()
-export class LendingMarket extends RuntimeModule<unknown> {
+export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
 
   @state() public mSupplyToken = StateMap.from<PublicKey, UInt64>(
     PublicKey,
     UInt64
   );
-  public constructor(@inject("zkMToken") public  zkmTokenMap: Map<PublicKey, ZKMToken>,@inject("zkMDebtToken") public  zkmDebtTokenMap: Map<PublicKey, ZKMDebtToken>,@inject("ERC20LikeToken") public  tokenMap: Map<PublicKey, ERC20LikeToken>) {
+  public constructor(@inject("zkMToken") public  zkmTokenMap: Map<PublicKey, zkMToken>,@inject("zkMDebtToken") public  zkmDebtTokenMap: Map<PublicKey, zkMDebtToken>,@inject("ERC20LikeToken") public  tokenMap: Map<PublicKey, ERC20LikeToken>) {
     super();
   }
   public assertTokenExist(asset:PublicKey) {

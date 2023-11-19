@@ -18,7 +18,12 @@ import { stat } from 'fs';
     senderNotAuthorized: () => "Sender is not authorized for spending token",
   };
 
-  export class ZKMToken extends ERC20LikeToken {
+interface ZKMTokenInterface {
+  defaultaddr: string;
+  minaAddresses : Map<string, string> ;
+}
+  @runtimeModule()
+  export class zkMToken extends ERC20LikeToken {
     
     @state() public supplyBalance = StateMap.from<PublicKey, UInt64>(
       PublicKey,
@@ -26,10 +31,16 @@ import { stat } from 'fs';
     );
     public admin = State.from<PublicKey>(PublicKey);
 
-    public constructor(admin: PublicKey, symbol:Field){
-      super(Field.from("zkM"+symbol.toString()+"Token"));
+    public constructor(){
+      super();
+    }
+    @runtimeMethod()
+    public setAdmin(admin: PublicKey): void {
       this.admin.set(admin);
-
+    }
+    @runtimeMethod()
+    public getAdmin(): PublicKey {
+      return this.admin.get().value;
     }
     @runtimeMethod()
     public _supply(from: PublicKey, amount: UInt64): void {
