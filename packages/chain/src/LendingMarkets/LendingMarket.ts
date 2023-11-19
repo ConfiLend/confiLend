@@ -5,7 +5,7 @@ import {
     runtimeMethod,
   } from "@proto-kit/module";
   import { State, StateMap, assert } from "@proto-kit/protocol";
-  import { Bool, PublicKey, UInt64 } from "o1js";
+  import { Bool, PublicKey, UInt64 , Field} from "o1js";
 import { ERC20LikeToken } from "../tokens/ERC20LikeToken";
 import { inject } from "tsyringe";
 import { zkMToken } from "../tokens/zkMToken";
@@ -31,6 +31,47 @@ export class LendingMarket extends RuntimeModule<LendingMarketConfig> {
   );
   public constructor(@inject("zkMToken") public  zkmTokenMap: Map<PublicKey, zkMToken>,@inject("zkMDebtToken") public  zkmDebtTokenMap: Map<PublicKey, zkMDebtToken>,@inject("ERC20LikeToken") public  tokenMap: Map<PublicKey, ERC20LikeToken>) {
     super();
+    this.config.minaTokenAddresses.forEach((value, key) => {
+      const mtoken = new zkMToken()
+      const mtokenAddr = this.config.minaMTokenAddresses.get(key)
+      if (mtokenAddr == undefined) {
+        mtoken.setTokenAddress(PublicKey.from({x:Field.from(""),isOdd:Bool(true)})); 
+      } else{
+        mtoken.setTokenAddress(PublicKey.from({x:Field.from(mtokenAddr),isOdd:Bool(true)})); 
+
+      }
+      mtoken.setAdmin(PublicKey.from({x:Field.from(this.config.LendingMarketAddr),isOdd:Bool(true)}))
+      mtoken.setSymbol(Field.from("zk"+key+"MToken"));
+
+      zkmTokenMap.set(PublicKey.from({x:Field.from(key),isOdd:Bool(true)}),mtoken);
+
+      const mDebttoken = new zkMDebtToken()
+      const mDebttokenAddr = this.config.minaMDebtTokenAddresses.get(key)
+      if (mDebttokenAddr == undefined) {
+        mtoken.setTokenAddress(PublicKey.from({x:Field.from(""),isOdd:Bool(true)})); 
+      } else{
+        mtoken.setTokenAddress(PublicKey.from({x:Field.from(mDebttokenAddr),isOdd:Bool(true)})); 
+
+      }
+      mDebttoken.setAdmin(PublicKey.from({x:Field.from(this.config.LendingMarketAddr),isOdd:Bool(true)}))
+      mDebttoken.setSymbol(Field.from("zk"+key+"DebtToken"));
+
+      zkmDebtTokenMap.set(PublicKey.from({x:Field.from(key),isOdd:Bool(true)}),mtoken);
+
+      const erc20token = new ERC20LikeToken()
+      const erc20TokenAddr = value
+      if (erc20TokenAddr == undefined) {
+        mtoken.setTokenAddress(PublicKey.from({x:Field.from(""),isOdd:Bool(true)})); 
+      } else{
+        mtoken.setTokenAddress(PublicKey.from({x:Field.from(erc20TokenAddr),isOdd:Bool(true)})); 
+
+      }
+      erc20token.setSymbol(Field.from(key));
+
+      tokenMap.set(PublicKey.from({x:Field.from(key),isOdd:Bool(true)}),new ERC20LikeToken());
+    });
+
+
   }
   public assertTokenExist(asset:PublicKey) {
     
